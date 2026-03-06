@@ -10,6 +10,33 @@
 - skills/skills-dashboard/SKILL.md
 - skills/skills-dashboard/scripts/scrape_and_build.py
 
+## Polished Skills
+
+- skills/session-commit/SKILL.md
+- skills/skills-dashboard/SKILL.md
+
+## Personal Skills (cmd-*)
+
+- skills/cmd-chain-halt-code-reviewer/SKILL.md
+- skills/cmd-clean-code/SKILL.md
+- skills/cmd-code-cleanup/SKILL.md
+- skills/cmd-code-review-sweep/SKILL.md
+- skills/cmd-gh-issue/SKILL.md
+- skills/cmd-idiot-proof-docs/SKILL.md
+- skills/cmd-mermaid-diagram/SKILL.md
+- skills/cmd-pr-build-context/SKILL.md
+- skills/cmd-pr-conflict-resolver/SKILL.md
+- skills/cmd-pr-description/SKILL.md
+- skills/cmd-pr-review-prepare/SKILL.md
+- skills/cmd-pr-test-plan/SKILL.md
+- skills/cmd-productionize/SKILL.md
+- skills/cmd-python-stylizer/SKILL.md
+- skills/cmd-rfc-review/SKILL.md
+- skills/cmd-rss-feed-generator/SKILL.md
+- skills/cmd-scope-sweep/SKILL.md
+- skills/debug-timeouts/SKILL.md
+- skills/makefile/SKILL.md
+
 External references:
 
 - https://agentskills.io/home

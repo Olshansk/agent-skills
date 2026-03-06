@@ -18,11 +18,14 @@
 ## Project Structure
 
 - `skills/` — installable skills
-- `skills/session-commit/` — captures session learnings and updates `AGENTS.md`
-- `skills/skills-dashboard/` — scrapes skills.sh and generates an interactive HTML dashboard
+  - `session-commit`, `skills-dashboard` — **Polished** (official distribution)
+  - `cmd-*` — **Personal** (local use, slash-command style)
+  - `makefile` — **Personal** (template-driven Makefile creation)
+- `personal/` — personal configurations and references (ignored by git)
+  - `configs/` — tool configuration snapshots (Claude, Gemini, Codex)
 - `.github/workflows/skills-validate.yml` — CI workflow for skill validation
-- `index.html` — root GitHub Pages dashboard (copied from `skills/skills-dashboard/index.html`)
-- `.claude-plugin/`, `gemini-extension.json` — legacy fallback metadata for tool-specific installs
+- `index.html` — root GitHub Pages dashboard
+- `Makefile` — local orchestration (link-skills, share-skills, sync-all)
 
 ## Dashboard Workflow
 

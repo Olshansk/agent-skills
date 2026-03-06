@@ -11,3 +11,29 @@ Thumbs.db
 
 # Local configuration (user-specific settings)
 .claude/*.local.md
+
+# Personal configurations and snapshots
+personal/configs/claude/plugins/
+personal/configs/codex/auth.json
+personal/configs/codex/history.jsonl
+personal/configs/codex/log/
+personal/configs/codex/sessions/
+personal/configs/codex/version.json
+personal/configs/gemini/oauth_creds.json
+personal/configs/gemini/google_accounts.json
+personal/configs/gemini/google_account_id
+personal/configs/gemini/user_id
+personal/configs/gemini/installation_id
+personal/configs/gemini/antigravity/installation_id
+personal/configs/gemini/state.json
+personal/configs/gemini/settings.json
+personal/configs/gemini/settings.json.orig
+personal/configs/gemini/antigravity/conversations/
+personal/configs/gemini/antigravity/brain/
+personal/configs/gemini/antigravity/user_settings.pb
+personal/configs/gemini/antigravity/implicit/
+personal/configs/gemini/antigravity/code_tracker/active/
+personal/configs/gemini/tmp/
+
+# Snapshots
+**/__snapshots__
