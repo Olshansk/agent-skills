@@ -67,6 +67,7 @@ Skills I use daily but might rename or delete in the future. I prefix them with 
 | `cmd-pr-build-context`         | Build high-signal PR context with diff analysis, risk assessment, and discussion questions |
 | `cmd-pr-conflict-resolver`     | Resolve merge conflicts with context-aware 3-tier classification and escalation       |
 | `cmd-pr-description`           | Generate concise PR descriptions by analyzing the diff against a base branch          |
+| `cmd-proofread`                | Proofread posts for spelling, grammar, repetition, logic, weak arguments, and broken links |
 | `cmd-pr-review-prepare`        | Prepare branch for code review by building context and identifying issues             |
 | `cmd-pr-test-plan`             | Generate manual test plans with verified commands and pass/fail criteria               |
 | `cmd-productionize`            | Transform apps into production-ready deployments with framework-specific optimization |
