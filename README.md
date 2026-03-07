@@ -6,8 +6,12 @@
 [![OpenCode](https://img.shields.io/badge/OpenCode-3B82F6)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
 
-Multi-skill catalog for agentic CLIs by [Daniel Olshansky](https://olshansky.info).
+> [!NOTE]
+> My personal and public agent skills. [Olshansky.info](https://olshansky.info)
 
+## What is this? <!-- omit in toc -->
+
+- Olshansky's day-to-day agent skills
 - Follows the [Agent Skills](https://agentskills.io/home) pattern for cross-tool skill distribution
 - Inspired by [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)
 
@@ -15,9 +19,10 @@ Multi-skill catalog for agentic CLIs by [Daniel Olshansky](https://olshansky.inf
 
 - [Quickstart](#quickstart)
 - [Available Skills](#available-skills)
-  - [Session Commit](#session-commit)
-- [Skills Dashboard](#skills-dashboard)
+  - [Polished Skills](#polished-skills)
+  - [Personal Skills (`cmd-*`)](#personal-skills-cmd-)
 - [Star History](#star-history)
+- [Demo of `skills-dashboard`](#demo-of-skills-dashboard)
 
 ## Quickstart
 
@@ -25,80 +30,59 @@ Multi-skill catalog for agentic CLIs by [Daniel Olshansky](https://olshansky.inf
 npx skills add olshansk/agent-skills
 ```
 
-Then ask your agent to run any installed skill (e.g., "close the loop", "generate skills dashboard").
+Then ask your agent to run any installed skill:
+
+- _"resolve merge conflicts"_
+- _"close the loop on this session"_
+- _"idiot proof the documentation"_
+- _"generate skills dashboard"_
+
+> [!TIP]
+> Start with [`session-commit`](skills/session-commit/SKILL.md) — it turns every coding session into durable knowledge by extracting patterns, decisions, and gotchas into your `AGENTS.md`. Future sessions (and future agents) pick up right where you left off.
 
 ## Available Skills
 
 ### Polished Skills
 
-Official distribution skills for public use.
+Skills I've polished for public use.
 
-| Skill | What it does | Trigger examples |
-| --- | --- | --- |
-| [`session-commit`](skills/session-commit/SKILL.md) | Captures session learnings and updates `AGENTS.md` safely | "run session commit", "close the loop", "update AGENTS.md" |
-| [`skills-dashboard`](skills/skills-dashboard/SKILL.md) | Scrapes skills.sh and generates an interactive HTML dashboard | "generate skills dashboard", "show skills ecosystem" |
+| Skill                                                  | What it does                                                  | Trigger examples                                           |
+| ------------------------------------------------------ | ------------------------------------------------------------- | ---------------------------------------------------------- |
+| [`session-commit`](skills/session-commit/SKILL.md)     | Captures session learnings and updates `AGENTS.md` safely     | "run session commit", "close the loop", "update AGENTS.md" |
+| [`skills-dashboard`](skills/skills-dashboard/SKILL.md) | Scrapes skills.sh and generates an interactive HTML dashboard | "generate skills dashboard", "show skills ecosystem"       |
 
 ### Personal Skills (`cmd-*`)
 
-Personal productivity skills, mostly for use as slash commands. These are not intended for public distribution but are consolidated here for easy management.
+Skills I use daily but might rename or delete in the future. I prefix them with `cmd-` so I can easily also leverage them as custom slash commands in claude code.
 
-| Skill | Description |
-|-------|-------------|
-| `cmd-chain-halt-code-reviewer` | Review protocol code for chain halt risks and non-determinism |
-| `cmd-clean-code` | Improve code readability using idiomatic best practices |
-| `cmd-code-cleanup` | Remove dead code and duplication pragmatically |
-| `cmd-code-review-sweep` | Review changes for test gaps and naming consistency |
-| `cmd-gh-issue` | Create GitHub issues from conversation context |
-| `cmd-idiot-proof-docs` | Simplify documentation for clarity and scannability |
-| `cmd-mermaid-diagram` | Generate and edit Mermaid flowcharts and diagrams |
-| `cmd-pr-build-context` | Build high-signal PR context for review |
-| `cmd-pr-conflict-resolver` | Resolve merge conflicts systematically |
-| `cmd-pr-description` | Generate concise PR descriptions from diffs |
-| `cmd-pr-review-prepare` | Prepare branch for code review |
-| `cmd-pr-test-plan` | Generate manual test plans for PR changes |
-| `cmd-productionize` | Transform applications into production-ready deployments |
-| `cmd-python-stylizer` | Analyze and improve Python code style |
-| `cmd-rfc-review` | Review RFCs using the SCQA framework |
-| `cmd-rss-feed-generator` | Generate Python RSS feed scrapers |
-| `cmd-scope-sweep` | Final pass for missed items before closing scope |
-| `debug-timeouts` | Analyze and debug timeout hierarchies |
-| `makefile` | Create or improve Makefiles with templates |
-
-## Local Development
-
-Manage symlinks to your agents (Claude, Gemini, Codex) from this single source of truth:
-
-```bash
-# Link all skills to Claude only
-make link-skills
-
-# Share across all agents (Gemini, Codex, Claude)
-make setup
-```
-
-## Makefile Targets
-
-| Target | Description |
-|--------|-------------|
-| `make setup` | First-time setup: replace real dirs with repo symlinks for all agents |
-| `make link-skills` | Symlink repo skills into `~/.claude/skills/` |
-| `make share-skills` | Symlink repo skills into Gemini and Codex |
-| `make list-skills` | List all skills with descriptions |
-| `make sync-all` | Sync all tool configs into `personal/configs/` |
-| `make test` | Validate skill frontmatter and repo consistency |
-| `make status` | Show repository status |
-
-### Session Commit
-
-> [!TIP]
-> Start with [`session-commit`](skills/session-commit/SKILL.md) — it turns every coding session into durable knowledge by extracting patterns, decisions, and gotchas into your `AGENTS.md`. Future sessions (and future agents) pick up right where you left off.
-
-## Skills Dashboard
-
-A live dashboard of the skills.sh ecosystem is available at **[skills-dashboard.olshansky.info](https://skills-dashboard.olshansky.info/)**.
-
-It shows publisher distribution, install counts, top skills, and the long-tail power law of adoption. Regenerate it yourself with the `skills-dashboard` skill.
+| Skill                          | Description                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------------ |
+| `cmd-chain-halt-code-reviewer` | Review protocol code for chain halt risks, non-determinism, and onchain behavior bugs |
+| `cmd-clean-code`               | Improve code readability without altering functionality using idiomatic best practices |
+| `cmd-code-cleanup`             | Remove dead code and duplication with a 5-phase systematic approach                   |
+| `cmd-pr-sweep`                 | Review changes for test gaps, simplification, naming consistency, reuse, and TODO quality |
+| `cmd-gh-issue`                 | Create structured GitHub issues from conversation context using `gh` CLI              |
+| `cmd-idiot-proof-docs`         | Simplify documentation for clarity and scannability with approval-gated edits         |
+| `cmd-mermaid-diagram`          | Generate and edit Mermaid flowcharts and sequence diagrams with syntax validation      |
+| `cmd-pr-build-context`         | Build high-signal PR context with diff analysis, risk assessment, and discussion questions |
+| `cmd-pr-conflict-resolver`     | Resolve merge conflicts with context-aware 3-tier classification and escalation       |
+| `cmd-pr-description`           | Generate concise PR descriptions by analyzing the diff against a base branch          |
+| `cmd-pr-review-prepare`        | Prepare branch for code review by building context and identifying issues             |
+| `cmd-pr-test-plan`             | Generate manual test plans with verified commands and pass/fail criteria               |
+| `cmd-productionize`            | Transform apps into production-ready deployments with framework-specific optimization |
+| `cmd-python-stylizer`          | Analyze Python code for naming, structure, nesting, and cognitive load reduction      |
+| `cmd-rfc-review`               | Review RFCs for problem clarity, compliance, security, and performance using SCQA     |
+| `cmd-rss-feed-generator`       | Generate Python RSS feed scrapers with hourly GitHub Actions integration              |
+| `cmd-scope-sweep`              | Final pass to identify missed items, edge cases, and risks before closing scope       |
+| `debug-timeouts`               | Analyze and debug timeout hierarchies                                                 |
+| `makefile`                     | Create or improve Makefiles with templates (python-uv, fastapi, nodejs, go, flutter) |
 
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=olshansk/agent-skills&type=date&legend=top-left)](https://www.star-history.com/#olshansk/agent-skills&type=date&legend=top-left)
+
+## Demo of `skills-dashboard`
+
+A live dashboard of the skills.sh ecosystem is available at **[skills-dashboard.olshansky.info](https://skills-dashboard.olshansky.info/)**.
+
+It shows publisher distribution, install counts, top skills, and the long-tail power law of adoption. Regenerate it yourself with the `skills-dashboard` skill.

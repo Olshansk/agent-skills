@@ -1,5 +1,5 @@
 ---
-name: cmd-code-review-sweep
+name: cmd-pr-sweep
 description: Review changes for test gaps, simplification, naming consistency, reuse opportunities, and TODO quality
 disable-model-invocation: true
 ---

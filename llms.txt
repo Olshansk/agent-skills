@@ -20,7 +20,7 @@
 - skills/cmd-chain-halt-code-reviewer/SKILL.md
 - skills/cmd-clean-code/SKILL.md
 - skills/cmd-code-cleanup/SKILL.md
-- skills/cmd-code-review-sweep/SKILL.md
+- skills/cmd-pr-sweep/SKILL.md
 - skills/cmd-gh-issue/SKILL.md
 - skills/cmd-idiot-proof-docs/SKILL.md
 - skills/cmd-mermaid-diagram/SKILL.md
