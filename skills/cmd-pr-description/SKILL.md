@@ -4,134 +4,183 @@ description: Generate concise PR descriptions by analyzing the diff against a ba
 disable-model-invocation: true
 ---
 
-# Quick PR Description
+# Quick PR Description <!-- omit in toc -->
 
 Generate a concise PR description by analyzing the diff against a base branch.
 
 Output the result in a markdown file named `PR_DESCRIPTION.md`.
 
+- [Instructions](#instructions)
+  - [1. Determine the base branch](#1-determine-the-base-branch)
+  - [2. Analyze the changes against the default branch](#2-analyze-the-changes-against-the-default-branch)
+  - [3. Generate the description using the format below](#3-generate-the-description-using-the-format-below)
+- [Output Format](#output-format)
+- [Section Rules](#section-rules)
+  - [tl;dr](#tldr)
+  - [Summary](#summary)
+  - [Table Diff](#table-diff)
+  - [Details](#details)
+  - [General Details](#general-details)
+- [Example Output](#example-output)
+
 ## Instructions
 
-1. First, determine the base branch using the repository's default branch:
+### 1. Determine the base branch
 
-   Try these methods in order until one succeeds:
+First, determine the base branch using the repository's default branch.
 
-   **Method 1 - GitHub CLI:**
-   ```bash
-   BASE_BRANCH=$(gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null)
-   ```
+Try these methods in order until one succeeds:
 
-   **Method 2 - Git remote:**
-   ```bash
-   BASE_BRANCH=$(git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d: -f2 | xargs)
-   ```
+**Method 1 - GitHub CLI**
 
-   **Method 3 - Git symbolic-ref:**
-   ```bash
-   BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-   ```
+```bash
+BASE_BRANCH=$(gh repo view --json defaultBranchRef -q '.defaultBranchRef.name' 2>/dev/null)
+```
 
-   **IMPORTANT:** Do NOT assume `main` as a fallback. If all methods fail, ask the user which branch to use as the base.
+**Method 2 - Git remote**
 
-2. Analyze the changes against the default branch:
+```bash
+BASE_BRANCH=$(git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d: -f2 | xargs)
+```
 
-   ```bash
-   git diff $BASE_BRANCH --stat -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
-   git log $BASE_BRANCH..HEAD --oneline
-   ```
+**Method 3 - Git symbolic-ref**
 
-3. Generate the description using the format below
+```bash
+BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+```
+
+**IMPORTANT:** Do NOT assume `master` or `main` as a fallback. If all methods fail, ask the user which branch to use as the base.
+
+### 2. Analyze the changes against the default branch
+
+```bash
+git diff $BASE_BRANCH --stat -- ":(exclude)*.lock" ":(exclude)package-lock.json" ":(exclude)pnpm-lock.yaml" ":(exclude)package.json"
+git log $BASE_BRANCH..HEAD --oneline
+```
+
+### 3. Generate the description using the format below
 
 ## Output Format
 
+```markdown
+_tl;dr This is a single sentence summarizing the most important outcome of this PR in 100-200 characters._
+
+## Summary
+
+- **Subject/topic**: < 100 character explanation
+- ...
+- ...
+
+## Table Diff
+
+| Component                          | Before                                     | After                                    |
+| ---------------------------------- | ------------------------------------------ | ---------------------------------------- |
+| 1-3 words describing the component | 1 sentence describing how it worked before | 1 sentence describing how it works after |
+| ...                                | ...                                        | ...                                      |
+| ...                                | ...                                        | ...                                      |
+
+## Details
+
+<details>
+<summary>Technical Details</summary>
+
+### Subsection Title
+
+- **Subject/topic**: < 100 character explanation
+- ...
+
+### Another Subsection
+
+- **Subject/topic**: < 100 character explanation
+- ...
+
+</details>
+```
+
+## Section Rules
+
+### tl;dr
+
+- Single sentence, max ~120 characters
+- Product-level: what does the user/operator/developer get?
+- No implementation details, no file names
+
 ### Summary
 
-Write 3-5 bullet points. Each bullet follows this format:
+- 2-5 bullets, one per meaningful change (not per file)
+- Min (2) and max (5) are hard floors and ceilings per section
+- Bold phrase answers "what does the user/operator get?"
+- Plain language after the dash — one sentence, no jargon
+- No implementation details — reviewers will read the diff for that
+- No fluff — skip "minor cleanup", "refactor", "update docs" unless they deliver real value
+- Start from the most impactful change and work down
 
-```markdown
-- **Product-level value** - One sentence explaining what changed and why it matters
-```
+### Table Diff
 
-Focus on what the PR delivers for users, operators, or developers -- not implementation details.
+- **Always include this section**
+- Should have anywhere from 1-10 rows depending on the size of the PR
+- One row per component, module, config, API, or behavior that changed
+- "Component" = the thing that changed (endpoint, table, config key, module, behavior, etc.)
+- "Before" = previous state, or `N/A` if new
+- "After" = new state, or `Removed` if deleted
+- Keep cells concise — short phrases, not sentences
+- Group related rows; aim for 3-10 rows
+- Good component examples: API endpoint, DB table/column, config key, env var, dependency version, CLI flag, permission, error behavior
 
-```markdown
-- **Faster giveaway queries** - Entries and winners now track account IDs directly, eliminating slow multi-table joins
-- **Hourly giveaway alignment** - Start and end times must land on the hour to match the cron schedule that manages giveaway lifecycles
-- **Auto-close expired giveaways** - New admin endpoint lets a cron job transition active giveaways to ended when their time is up
-- **Wallet-first accounts can log in** - Accounts created via wallet linking now get a primary identity so JWT auth works
-```
+### Details
 
-## Style Rules
+- **Only include for larger PRs** (5+ files changed or multiple logical groups)
+- Use collapsible `<details>` tags
+- Group by feature/concern, not by file
+- This is where implementation specifics go (file names, function names, migration details)
+- Use backticks for code references (`file.py`, `get_user()`, `/api/v1/users`)
+- 1-3 subsections, each with 3-5 bullets
 
-- **3-5 bullets total** -- one bullet per meaningful change, not per file
-- **Bold the value** -- the bold phrase should answer "what does the user/operator get?"
-- **Plain language after the dash** -- one sentence, no jargon, no function/file/variable names
-- **No implementation details** -- skip function names, file names, column names, migration IDs, etc. Reviewers will read the diff for that
-- **No fluff** -- skip "minor cleanup", "refactor", "update docs" unless they deliver real value
-- **Start from the most impactful change** and work down
+### General Details
+
+- Use backticks for code references (`file.py`, `get_user()`, `/api/v1/users`)
+- Italicize or bold keywords if it helps readability
 
 ## Example Output
 
 ```markdown
-- **Session-based login** - Users can now log in with email/password and stay authenticated across browser sessions
+_tl;dr Users can now log in with email/password and stay authenticated across browser sessions._
+
+## Summary
+
+- **Session-based login** - Users authenticate with email/password and maintain sessions across browser restarts
 - **Faster auth checks** - Session lookups use an indexed token column instead of scanning the full users table
 - **Remember-me support** - Users can opt into 30-day sessions instead of the default 24-hour expiry
-```
+
+## Table Diff
+
+| Component        | Before                     | After                                           |
+| ---------------- | -------------------------- | ----------------------------------------------- |
+| Auth method      | API key only               | Email/password + session cookie                 |
+| Session duration | N/A                        | 24 hours (default), 30 days (remember-me)       |
+| `sessions` table | N/A                        | New table with `user_id`, `token`, `expires_at` |
+| Token lookup     | Full table scan on `users` | Indexed lookup on `sessions.token`              |
+| `/auth/login`    | N/A                        | New endpoint                                    |
+| `/auth/logout`   | N/A                        | New endpoint                                    |
+
+## Details
 
 <details>
-<summary>Detailed Change Groups (optional, for larger PRs)</summary>
+<summary>Technical Details</summary>
 
-### Grouped Format
+### Authentication Service
 
-Group related changes under `# Change Title` headers with bullet points:
+- **New login service**: Handles JWT issuance, session creation, and cookie management
+- Add `login_service.py` with session create/validate/revoke methods
+- Integrate `/auth/login` and `/auth/logout` endpoints in `routes/auth.py`
+- Support `remember_me` flag to toggle 24h vs 30d expiry
 
-```markdown
-# Change Title
+### Database Schema
 
-- Brief description of what was done
-- Use `backticks` around file names, function names, variables, endpoints
-- Keep bullets concise (1 line each)
-
-# Another Change
-
-- Another set of related changes
-- More details with `code_references`
-```
-
-### Grouped Style Rules
-
-- **Headers**: Use `# Change Title` for each logical group of changes
-- **Backticks**: Wrap these in backticks:
-  - File names: `identity_sync.py`
-  - Functions: `get_cdp_end_user()`
-  - Variables: `cdp_token`
-  - Endpoints: `/auth/login/complete`
-  - Config keys, env vars, etc.
-- **Bullets**:
-  - Start with action verb (Add, Remove, Update, Fix, Refactor)
-  - Keep to 1 line, ~80 chars max
-  - 3-5 bullets per section
-- **Grouping**: Group by feature/concern, not by file
-- **No fluff**: Skip "minor changes", "cleanup", etc. unless significant
-
-### Grouped Example
-
-```markdown
-# User Authentication
-
-- Add `login_service.py` with JWT-based session management
-- Integrate `/auth/login` and `/auth/logout` endpoints
-- Support `remember_me` flag for extended session duration
-
-# Database Schema
-
+- **New sessions table**: Stores active sessions with automatic expiry
 - Add `sessions` table with `user_id`, `token`, `expires_at` columns
+- Add B-tree index on `token` for O(1) lookups
 - Add index on `expires_at` for cleanup job performance
 
-# Tests
-
-- Add 15 unit tests for `login_service.py`
-- Add integration tests for auth endpoints
-```
-
 </details>
+```
