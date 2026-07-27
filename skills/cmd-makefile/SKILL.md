@@ -310,20 +310,23 @@ env-install:
 
 ### Categorized Help (for 5+ targets)
 
+Help is **generated**, never hand-written. Declare a section with `##@`, document
+targets with `##`, and the renderer does the rest — see [Help System](#help-system).
+
 ```makefile
-help:
-	@printf "$(BOLD)=== 🚀 API ===$(RESET)\n"
-	@printf "$(CYAN)%-25s$(RESET) %s\n" "api-run" "Start server"
-	@printf "%-25s $(GREEN)make api-run [--reload]$(RESET)\n" ""
+##@ 🚀 API
+
+api-run: ## Start server on port `$(PORT)` (`uvicorn --reload`)
+api-run-prod: ## Start without reload, binds `0.0.0.0` (⚠️ PROD)
 ```
 
 **Makefile ordering rule - help targets go LAST, just before catch-all:**
 
 1. Configuration (`?=` variables)
-2. `HELP_PATTERNS` definition
-3. Imports (`include ./makefiles/*.mk`)
-4. Main targets (grouped by function)
-5. `help:` and `help-unclassified:` targets
+2. `HELP_*` configuration (`HELP_TITLE`, `HELP_ICON`, `HELP_VARS`, …)
+3. Imports (`include ./makefiles/*.mk`) — **include order IS help section order**
+4. Main targets (grouped by function, each group under a `##@` header)
+5. `help:` and `help-unclassified:` targets (or `include ./makefiles/help.mk`)
 6. Catch-all `%:` rule (absolute last)
 
 ### Preflight Checks
@@ -585,31 +588,93 @@ old-name: new_name ## (Legacy) Description
 
 ## Help System
 
+**Help is GENERATED from the makefiles, never hand-maintained.** A hand-written
+help block authors every target twice — once as a rule, once as a `printf` — and
+the two drift apart the first time someone is in a hurry. Copy
+`modules/help.mk` (or the inline block in `templates/base.mk`) and never write a
+`printf` per target again.
+
+Two kinds of comment drive the entire output:
+
+```makefile
+##@ 🐘 Database & Migrations        # declares a section (emoji lives HERE, only here)
+
+db-migrate: ## Apply migrations (alembic upgrade head)
+db-reset: ## Destroy volume, recreate, migrate (⚠️ DESTRUCTIVE)
+```
+
+Renders as:
+
+```text
+═══ 🐘 Database & Migrations ═══
+
+  db-migrate              Apply migrations (alembic upgrade head)
+  db-reset                Destroy volume, recreate, migrate (⚠️ DESTRUCTIVE)
+```
+
+### The four rules
+
+1. **Emoji on section headers, NEVER on target lines.** Per-target emoji have
+   inconsistent display widths — `⬆️ ♻️ 🖥️ ☁️` (variation-selector emoji) render
+   1 cell, `🐘 🚀 📦` render 2 — so the description column jitters line to line
+   and the list stops being scannable. One emoji per section can't misalign
+   anything below it. This is the single highest-impact readability rule here.
+2. **Sections render in file order, files in include order.** The include list in
+   the root Makefile IS the help ordering — no alphabetical sort, so `quickstart`
+   can actually be first. Include `help.mk` LAST so ❓ Help renders last.
+3. **Every `.mk` declares its own `##@` before its targets** (the section resets
+   at each file boundary). `make help-unclassified` catches the ones that forgot.
+4. **Three color tiers, standard 16-color ANSI** (theme-adaptive — the same file
+   must read correctly on light and dark terminals; never pin 256-color values):
+
+   | Tier | Color | Example |
+   |---|---|---|
+   | Section header | `$(BOLD)$(BLUE)` | `═══ 🐘 Database & Migrations ═══` |
+   | Target name | `$(CYAN)` | `db-migrate` |
+   | Description prose | default fg | `Apply migrations`, `(needs db + redis)` |
+   | Inline literal | `$(GREEN)` | `` `alembic upgrade head` ``, `` `openapi.json` `` |
+   | Secondary detail | `$(DIM)` | `# uv sync --all-extras` |
+   | Inline danger | `$(YELLOW)` | `(⚠️ DESTRUCTIVE)` |
+
+   **Headers and target names must never share a hue.** Two hierarchy levels in
+   one apparent color flattens the list into an unscannable wall — this is the
+   most common failure mode in real Makefiles. Avoid `$(BOLD)$(MAGENTA)` (reads
+   purple, clashes with most themes); bold-with-no-color gets lost entirely.
+
+### Banner
+
 **ASCII box title with a project-branded emoji on the right.** The box anchors the top of `make help`; the right-side emoji gives the project a glanceable identity (leaf/herb for Grove, rocket for an SDK, lock for a security tool, etc.). Keep the emoji on the right — left-side placement crowds the title text.
 
+The renderer computes the box from `HELP_TITLE` / `HELP_ICON` / `HELP_WIDTH`, so
+it stays square when the project is renamed:
+
 ```makefile
-help:
-	@printf "\n"
-	@printf "$(BOLD)$(CYAN)╔══════════════════════════════════════════════╗$(RESET)\n"
-	@printf "$(BOLD)$(CYAN)║$(RESET)  $(BOLD)Grove App — Makefile Targets$(RESET)            🌿  $(BOLD)$(CYAN)║$(RESET)\n"
-	@printf "$(BOLD)$(CYAN)╚══════════════════════════════════════════════╝$(RESET)\n\n"
+HELP_TITLE   ?= Grove App — Make Targets   # text only, no emoji (see below)
+HELP_ICON    ?= 🌿
+HELP_TAGLINE ?= Every command runs via uv.
+HELP_WIDTH   ?= 46
 ```
 
-> ⚠️ **Emoji width gotcha.** Most emojis render as 2 terminal columns but count as 1 char in the printf string — so counting `═` against visible spaces won't match. Eyeball the rendered output and add/remove spaces before the emoji until the right `║` lines up with the corner of the box. Budget an extra pass for this.
+> ⚠️ **Emoji width gotcha.** Most emojis render as 2 terminal columns but count as 1 char, so padding computed from string length comes out short. The renderer budgets exactly 2 cells for `HELP_ICON` — keep emoji OUT of `HELP_TITLE` or the right `║` will not line up.
 
-**Categorized help with sections:**
+### Expanding make vars in descriptions
+
+`awk` reads raw file text, so make never expands `$(PORT)` inside a `## ` comment
+— help would print the literal `$(PORT)`. List such vars in `HELP_VARS` and they
+are substituted at render time:
+
 ```makefile
-	@printf "$(BOLD)$(BLUE)=== 🏗️  Build ===$(RESET)\n\n"
-	@grep -h -E '^build-[a-zA-Z_-]+:.*?## .*$$' ... | awk ...
-	@printf "$(BOLD)$(BLUE)=== 🔧 Development ===$(RESET)\n\n"
-	@grep -h -E '^dev-[a-zA-Z_-]+:.*?## .*$$' ... | awk ...
+HELP_VARS ?= PORT HEALTH_PATH
+
+api-health: ## Check API health endpoint ($(HEALTH_PATH))   # renders: (/health)
 ```
 
-**Section header rules:**
-- **Every section header gets a leading emoji.** Makes blocks scannable at a glance (🚀 Run, 🛠️ Dev, 🧹 Cleanup) and eye-trains the reader so they can skip directly to the section they want without parsing words. Use the emoji vocabulary table below for consistency across projects.
-- **Use a distinct color for section headers** — not the same color as the title or target names. **Default to `$(BOLD)$(BLUE)`** when the title uses `$(BOLD)$(CYAN)` and target names are `$(CYAN)`. Avoid `$(BOLD)$(MAGENTA)` — reads as purple and clashes with most terminal themes. Good alternatives if blue isn't available: `$(BOLD)$(GREEN)` (if green isn't already heavily used for success messages) or `$(BOLD)$(YELLOW)` (conflicts less with "warning" context when help has no warnings). Bold-only with no color renders as plain terminal-default and gets lost on dense help output.
-- **Trailing `\n\n`** — always put a blank line between the section header and the first target. Makes each block visually scannable; no blank line produces a wall of text.
-- **Blank line between sections** — follow each section's last target with `@printf "\n"` before the next header.
+### NO_COLOR
+
+Guard the palette with `ifdef NO_COLOR` so `make help > FILE` doesn't embed raw
+escapes. Do **not** try to auto-detect a TTY: `$(shell test -t 1)` always reports
+false (subshell stdout is a pipe), and `MAKE_TERMOUT` needs GNU make ≥ 4, which
+macOS doesn't ship.
 
 **Emoji vocabulary for help sections** (pick from this list; reuse the same emoji for the same concept across projects so the visual language transfers):
 
@@ -627,114 +692,171 @@ help:
 | Cleanup / reset                          | 🧹    | `clean-*` family                                |
 | Help / reference                         | ❓    | `help`, `help-unclassified`                     |
 
-Leave padding/alignment intact when substituting emojis — some (🛠️, 🗄️, 🏗️) include a variation selector that consumes an extra column in some terminals; add an extra space after them if alignment drifts.
+Emoji here go on the `##@` header only — a variation-selector emoji (🛠️, 🗄️, 🏗️) may consume an extra column, which is harmless in a header and would wreck a target line.
 
-**Quick Start is a 2-step instruction list, not a target list.** If the real entry point is a short sequence (`make env-setup && make run-prod`), print numbered instructions — do NOT list the same targets under both Quick Start and their "real" section (Environment Utilities, Run, etc.). Duplication doubles the help height and dilutes signal.
+**Quick Start is a 2-step instruction list, not a target list.** If the real entry point is a short sequence (`make env-setup && make run-prod`), make `quickstart` a target that prints numbered instructions — do NOT list the same targets under both Quick Start and their "real" section (Environment Utilities, Run, etc.). Duplication doubles the help height and dilutes signal.
 
 ```makefile
-# Good - numbered instructions, targets appear only in their real section
-@printf "$(BOLD)$(MAGENTA)=== Quick Start ===$(RESET)\n\n"
-@printf "  1. $(CYAN)make env-setup$(RESET)\n"
-@printf "  2. $(CYAN)make run-mainnet$(RESET)\n\n"
+# Good - one quickstart target printing an ordered sequence
+##@ 🚀 Quick Start
 
-# Bad - same targets repeated under "Quick Start" and "Environment Utilities"
-@printf "$(BOLD)=== Quick Start ===$(RESET)\n"
-@printf "$(CYAN)%-25s$(RESET) %s\n" "setup" "First-time setup"
-@printf "$(CYAN)%-25s$(RESET) %s\n" "status" "Show environment"
-...
-@printf "$(BOLD)=== Environment Utilities ===$(RESET)\n"
-@printf "$(CYAN)%-25s$(RESET) %s\n" "env-setup" "First-time setup"     # duplicate
+quickstart: ## Print ordered first-run steps
+	@printf "  $(GREEN)1.$(RESET) make env-install   $(DIM)# uv sync --all-extras$(RESET)\n"
+	@printf "  $(GREEN)2.$(RESET) make run-local\n"
+
+# Bad - the same targets listed under Quick Start AND their real section
 ```
 
 **Key help patterns:**
-- `help` - Main categorized help
-- `help-unclassified` - Show targets not in any category (useful for auditing)
-- `help-all` - Show everything including internal targets
-- Hidden targets: prefix with `_` (e.g., `_build-internal`)
-- Legacy targets: label with `## (Legacy)` and filter from main help
+- `help` - Main categorized help, generated from `##@` + `##`
+- `help-unclassified` - Documented targets with no `##@` section above them (audit)
+- Hidden targets: prefix with `_` and give them NO `##` comment (e.g., `_check-docker`)
+- Legacy targets: label with `## (Legacy)` and park them under a `##@ 🗄️ Legacy` section
 
-**Always include a Help section in `make help` output:**
+**Always give `help` and `help-unclassified` their own section** — put `##@ ❓ Help`
+directly above them, otherwise the two most basic targets are missing from help
+and clutter `help-unclassified` instead. `modules/help.mk` already does this.
+
+**`help-unclassified` needs no exclusion list.** The old prefix-regex approach
+(`grep -v -E '^(env-|dev-|clean|help)'`) fell out of sync every time a prefix was
+added. The generated version asks a structural question instead — "is there a
+`##@` above this target?" — which stays correct forever:
 
 ```makefile
-	@printf "$(BOLD)=== ❓ Help ===$(RESET)\n"
-	@printf "$(CYAN)%-25s$(RESET) %s\n" "help" "Show this help"
-	@printf "$(CYAN)%-25s$(RESET) %s\n" "help-unclassified" "Show targets not in categorized help"
-	@printf "\n"
+help-unclassified: ## List documented targets with no ##@ section above them
+	@awk 'FNR == 1 { section = "" } \
+		/^##@ / { section = substr($$0, 5); next } \
+		/^[a-zA-Z0-9_-]+:.*## / && section == "" { print "  " $$0 }' $(MAKEFILE_LIST)
 ```
 
-**help-unclassified pattern** (note the `sed` to strip filename prefix):
+**Description format — one plain-text line, in the `##` comment:**
 
 ```makefile
-help-unclassified: ## Show targets not in categorized help
-	@printf "$(BOLD)Targets not in main help:$(RESET)\n"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		sed 's/^[^:]*://' | \
-		grep -v -E '^(env-|dev-|clean|help)' | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-25s$(RESET) %s\n", $$1, $$2}' || \
-		printf "  (none)\n"
-```
+# Good - one line, says what it affects, args shown inline
+scrape: ## Fetch posts into SQLite (make scrape SUBREDDITS=python LIMIT=10)
+dev-check: ## Lint + type-check — add FIX=true to auto-fix
+clean-build: ## Remove the .next build directory
+run-local: ## Run API against local DB (localhost:$(PORT))
 
-> 💡 Prefer **prefix-based exclusions** (`^(env-|dev-|db-|help|_|\.)`) over enumerating every single target name. A prefix regex stays correct as you add/rename targets; an enumerated list silently falls out of sync and becomes a maintenance burden.
-
-**Description format - one line with example:**
-```makefile
-# Good - concise description + example on next line
-@printf "$(CYAN)%-14s$(RESET) %s\n" "scrape" "Fetch posts into SQLite, detect problems"
-@printf "               $(GREEN)make scrape SUBREDDITS=python,django LIMIT=10$(RESET)\n"
-@printf "$(CYAN)%-14s$(RESET) %s\n" "dev-check" "Run ruff linter and formatter"
-@printf "               $(GREEN)make dev-check FIX=true$(RESET)\n"
-
-# Bad - too verbose, multi-line explanation
-@printf "  $(CYAN)$(BOLD)setup$(RESET)\n"
-@printf "      Install Python dependencies using uv. Run this once after cloning.\n"
-@printf "      Creates .venv/ and installs packages from pyproject.toml.\n"
-@printf "      $(GREEN)make setup$(RESET)\n"
+# Bad - a paragraph in a help line
+setup: ## Install Python dependencies using uv. Run this once after cloning. Creates .venv/ and installs from pyproject.toml.
 ```
 
 **Help description rules:**
-- **One line max** - Description must fit on single line unless user explicitly asks for more
-- **Include what it affects** - e.g., "creates .venv", "exports to CSV", "deletes database"
-- **Color inline paths/commands** - Use `$(GREEN)` for paths and commands within descriptions. Put color codes in the format string, not inside `%s` (printf `%s` treats ANSI as literals)
-- **Example on next line** - Show realistic usage with parameters in `$(GREEN)`
-- **Skip examples for simple targets** - If no parameters, no example needed
+- **One line max** — it shares a row with the target name; anything longer wraps and breaks the column.
+- **Include what it affects** — "creates .venv", "exports to CSV", "destroys the volume".
+- **No raw ANSI** — `$(YELLOW)` inside a `##` comment prints as the literal string `$(YELLOW)`. Use backticks (below) for emphasis; only names listed in `HELP_VARS` are expanded.
+- **Fold the example into the line** — `(make foo ARG=val)` or `— add FIX=true` rather than a second printf line. The generated renderer emits one row per target by design.
+- **Skip examples for simple targets** — if there are no parameters, no example is needed.
 
-**Coloring inline values in descriptions:**
-
-Two categories of inline value deserve consistent color treatment across every help description:
-
-| Value type | Color | Examples |
-|------------|-------|----------|
-| File paths | `$(YELLOW)` | `.env.local`, `.next`, `node_modules`, `package-lock.json`, `dist/`, `~/.grove` |
-| URLs and host:port | `$(YELLOW)` | `localhost:3000`, `api.grove.city`, `https://…` |
-| Commands and examples | `$(GREEN)` | `make foo BAR=baz`, `npm run dev` |
-
-Pick one color scheme across the whole Makefile and stick to it — a description that says "removes `.next`" in yellow in one line and green in another reads as accidental.
+**Wrap literals in backticks.** The renderer colors the contents green and strips
+the delimiters, so the tokens a reader actually reaches for — commands, files,
+paths, tool names, target names, env vars — pop out of the prose:
 
 ```makefile
-# Good - color codes in format string, paths/URLs in YELLOW, commands in GREEN
-@printf "$(CYAN)%-25s$(RESET) Remove $(YELLOW).next$(RESET) build directory\n" "clean-build"
-@printf "$(CYAN)%-25s$(RESET) Testnet API + testnet chains ($(YELLOW)api.testnet.grove.city$(RESET))\n" "run-testnet"
-@printf "$(CYAN)%-25s$(RESET) Clean + build, install to $(YELLOW)~/.grove$(RESET)\n" "install-prod"
-@printf "%-25s $(GREEN)make foo ARG=val$(RESET)\n" ""
-
-# Bad - color codes inside %s are printed as literals
-@printf "$(CYAN)%-25s$(RESET) %s\n" "install-prod" "Install to $(YELLOW)~/.grove$(RESET)"
+env-install: ## Install all deps incl extras (`uv sync --all-extras`)
+api-export-spec: ## Export OpenAPI spec to `openapi.json`
+db-shell: ## Open `psql` in the Postgres container
+test: ## Run unit tests (alias of `test-unit`)
 ```
 
-**URL-in-parens formula for `run-*` targets.** When a run target has a canonical destination (localhost port, API URL), append it in yellow parens at the end of the description. This is denser than a separate info line and matches how contributors actually scan help output.
+Renders as `Install all deps incl extras (`**`uv sync --all-extras`**`)` with the
+backticked span in green. Leave prose parentheticals plain — `(needs db + redis)`,
+`(prod-like, guarded)`. Marking up everything is the same as marking up nothing.
+
+Note this is markup, not detection: a "color whatever is in parens" rule would
+miss `openapi.json` (not in parens) and wrongly color `(needs db + redis)`.
+
+**Danger annotations are the other styled element.** A trailing `(⚠️ …)` renders in
+yellow. Use it for targets that destroy data or touch production, and nothing
+else — three per project keeps the marker meaningful, thirty makes it wallpaper:
 
 ```makefile
-@printf "$(CYAN)%-25s$(RESET) Local API + testnet chains ($(YELLOW)localhost:8000$(RESET))\n" "run-local"
-@printf "$(CYAN)%-25s$(RESET) Testnet API + testnet chains ($(YELLOW)api.testnet.grove.city$(RESET))\n" "run-testnet"
-@printf "$(CYAN)%-25s$(RESET) Production API + mainnet chains ($(YELLOW)api.grove.city$(RESET))\n" "run-mainnet"
+db-reset: ## Destroy volume, recreate, and migrate (⚠️ DESTRUCTIVE)
+run-api-prod: ## Run API against REMOTE prod DB, no reload (⚠️ PROD)
+clean-all: clean ## Clean caches and remove .venv (⚠️ DESTRUCTIVE)
 ```
 
-**Catch-all redirects to help:**
+**URL-in-parens formula for `run-*` targets.** When a run target has a canonical destination (localhost port, API URL), append it in parens at the end of the description — denser than a separate info line, and it matches how contributors actually scan help. Use `HELP_VARS` so the port is the real one:
+
+```makefile
+HELP_VARS ?= PORT
+
+run-local: ## Local API + testnet chains (localhost:$(PORT))
+run-testnet: ## Testnet API + testnet chains (api.testnet.grove.city)
+run-mainnet: ## Production API + mainnet chains (api.grove.city) (⚠️ PROD)
+```
+
+### Catch-all for unknown targets
+
+Suggest the closest documented targets instead of dumping the whole help page —
+a typo is usually one character off, and reprinting 40 targets buries the fix:
+
 ```makefile
 %:
-	@printf "$(RED)Unknown target '$@'$(RESET)\n"
-	@$(MAKE) help
+	@printf "$(RED)$(CROSS) Unknown target '$@'$(RESET)\n"
+	@targets=$$(awk -F: '/^[a-zA-Z0-9_-]+:.*## /{print $$1}' $(MAKEFILE_LIST) | sort -u); \
+	near=$$(printf '%s\n' "$$targets" | grep -i -- "$$(printf '%s' '$@' | cut -c1-4)" | head -5 || true); \
+	if [ -n "$$near" ]; then \
+		printf "$(DIM)Did you mean:$(RESET)\n"; \
+		printf "  $(CYAN)%s$(RESET)\n" $$near; \
+	fi; \
+	printf "$(DIM)Run '$(RESET)$(CYAN)make help$(RESET)$(DIM)' for all targets.$(RESET)\n"; \
+	exit 1
 ```
+
+Three rules, each learned from a real failure:
+
+| # | Rule | Failure it prevents |
+|---|---|---|
+| 1 | Keep it **last** in the file | A match-anything rule shadows every pattern rule defined after it |
+| 2 | Give every `-include <file>` an empty `<file>: ;` rule | `-include .env` makes `.env` a goal, the catch-all claims it, and a fresh clone greets you with `✗ Unknown target '.env'` on every run |
+| 3 | Never let an ignore-regex match target-shaped names | An ignore-list ending in `[a-z]+([-][a-z]+)*` swallows every typo — `make dev-tes` exits 0 and CI goes green on a target that does not exist |
+
+Rule 2 in practice, at the top of the file:
+
+```makefile
+-include .env
+# Optionally-included files are NOT build targets. An explicit rule beats a
+# match-anything rule, so this silences the catch-all for good.
+.env .env.prod .template.env: ;
+```
+
+An ignore-list is only for bare **arguments** passed as extra goals (`make send-tx 0xabc…`,
+a URL, a number, a TICKER) — never for anything that could be a mistyped target.
+
+## TODO Tracking
+
+`TODO.md` is a **generated view over the code**, never a hand-maintained backlog.
+Include `modules/todo.mk` and copy `modules/todo-scripts/gen_todo.py` to
+`scripts/gen_todo.py`. Rationale:
+[Move Fast & Document Things](https://olshansky.substack.com/p/move-fast-and-document-things).
+
+- A hand-written list is "the one document to rule them all" — it goes stale the
+  moment someone fixes something without updating it.
+- The TODO lives **next to the code it concerns**; the index is regenerated.
+- Filing a TODO is cheaper than filing a ticket. That is the point.
+- `make todo-check` fails when `TODO.md` is stale — wire it into CI.
+- `make todo-list` needs no Python and works in any language.
+
+```makefile
+# TODO_TECHDEBT: drop these casts if redis-py restores a typed client.
+# Blocked on upstream: redis-py 8 removed Generic[_StrType], so `Redis[str]`
+# raises at runtime. Re-check on the next major bump.
+```
+
+| # | Severity | Prefix | Act when |
+|---|---|---|---|
+| 1 | 🔴 | `FIXME` | Now — it is broken today |
+| 2 | 🔴 | `TODO_IN_THIS_PR` | Before merge |
+| 3 | 🟠 | `HACK` | Before it bites someone |
+| 4 | 🟠 | `TODO_REMOVE_LATER` | When its stated exit condition is met |
+| 5 | 🟡 | `TODO_TECHDEBT` / `TODO_BETA` / `TODO_PROD` / `TODO_OPTIMIZE` | Next cleanup, or at the named gate |
+| 6 | 🟢 | `TODO_IMPROVE` / `TODO_CONSIDERATION` / `TODO_FUTURE` / `TODO_IDEA` / `TODO` | Opportunistically |
+
+- Annotate with `TODO_PROD(#123, @olshansk):` to record an issue and/or owner.
+- Always say **what to do and why it is deferred** — a bare `TODO: fix this` helps nobody.
+- `NOTE:` is not tracked; it marks an explanation, not work.
 
 ## Runtime Output for Long-Running Targets
 
@@ -983,6 +1105,18 @@ make -n <target>   # Dry-run key targets
 - `reference.md` - Detailed patterns, categorized help, error handling
 - `templates/` - Full copy-paste Makefiles for each stack
 - `modules/` - Reusable pieces for complex projects
+  - `modules/help.mk` - **Generated `make help`** (`##@` sections). Include LAST.
+  - `modules/colors.mk` - ANSI palette, color tiers, `NO_COLOR` guard
+  - `modules/common.mk` - Shell settings, guards, preflight checks
+  - `modules/todo.mk` - **Generated `TODO.md`** from prefixed code comments
+  - `modules/todo-scripts/gen_todo.py` - companion for `make todo`
+
+> 🚧 **Generated-help migration status.** `base.mk`, `python-uv.mk`, and
+> `python-fastapi.mk` use the generated `##@` renderer. The six templates still
+> hand-writing their help block carry a `TODO_FUTURE` at the top of the file —
+> find them with `grep -rn "TODO_FUTURE" templates/` (currently `go.mk`,
+> `nodejs.mk`, `flutter.mk`, `electron.mk`, `chrome-extension.mk`,
+> `static-site.mk`). Convert one whenever you touch it for another reason.
 
 ## Example: Adding a Target
 

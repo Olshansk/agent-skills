@@ -17,6 +17,15 @@
 #     dev.mk                    # Setup, dev server, debug, clean
 #     build.mk                  # Pack-check, dist (mac/win/linux), publish
 #     lint.mk                   # ESLint, Prettier, TypeScript, tests
+#
+# TODO_FUTURE(@olshansk): convert this template's hand-written `help:` block to
+# the generated `##@` renderer used by base.mk / python-uv.mk / python-fastapi.mk
+# (see modules/help.mk). Why deferred: the conversion is mechanical but each
+# template needs its own section titles, emoji, and a render test. Do it the
+# next time this file is touched for any other reason.
+# How: add HELP_* config + `##@ <emoji> Section` markers above each target
+# group, wrap literals in `backticks`, then replace the printf-per-target block
+# with the renderer from modules/help.mk.
 
 .DEFAULT_GOAL := help
 

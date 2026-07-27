@@ -4,6 +4,8 @@
 # ============================================================================
 # ANSI Color Codes
 # ============================================================================
+# Standard 16 colors only, so output stays readable on both light and dark
+# terminal themes. Do not pin 256-color values — they are tuned to one theme.
 GREEN     := \033[0;32m
 YELLOW    := \033[1;33m
 BLUE      := \033[0;34m
@@ -16,6 +18,39 @@ DIM       := \033[2m
 RESET     := \033[0m
 BG_YELLOW := \033[43m
 BG_BLUE   := \033[44m
+
+# ============================================================================
+# `make help` color tiers (see help.mk)
+# ============================================================================
+#   BOLD+BLUE  section headers      ═══ 🐘 Database & Migrations ═══
+#   CYAN       target names         db-migrate
+#   (default)  descriptions         Apply migrations (alembic upgrade head)
+#   DIM        secondary detail     # uv sync --all-extras
+#   YELLOW     inline (⚠️ …) danger  (⚠️ DESTRUCTIVE)
+# Headers and target names must never share a hue — that flattens the hierarchy
+# into an unscannable wall. Three visibly distinct tiers, no more.
+
+# ============================================================================
+# NO_COLOR support (https://no-color.org)
+# ============================================================================
+# Strips every escape so piped/redirected output stays clean.
+# TTY auto-detection is deliberately not attempted: $(shell test -t 1) always
+# reports false (subshell stdout is a pipe), and MAKE_TERMOUT needs GNU make >= 4,
+# which macOS does not ship.
+ifdef NO_COLOR
+GREEN     :=
+YELLOW    :=
+BLUE      :=
+CYAN      :=
+RED       :=
+MAGENTA   :=
+BLACK     :=
+BOLD      :=
+DIM       :=
+RESET     :=
+BG_YELLOW :=
+BG_BLUE   :=
+endif
 
 # ============================================================================
 # Status Symbols

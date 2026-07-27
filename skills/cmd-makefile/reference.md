@@ -234,41 +234,56 @@ db-revision: ## Create migration (usage: make db-revision MSG="description")
 
 ## Categorized Help Pattern
 
-For 10+ targets, organize help output by category:
+Help is **generated** from the makefiles — never a hand-written `printf` per
+target, which authors every target twice and drifts the moment someone is in a
+hurry. Copy `modules/help.mk` (or the inline block in `templates/base.mk`), then
+annotate targets with two kinds of comment:
 
 ```makefile
-.PHONY: help
-help: ## Show all available targets
-	@printf "\n$(BOLD)$(CYAN)📋 Project - Makefile Targets$(RESET)\n\n"
+##@ 🚀 Quick Start
 
-	@printf "$(BOLD)=== 🚀 Quick Start ===$(RESET)\n"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "setup" "First-time setup"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "run" "Run the app"
-	@printf "\n"
+setup: ## First-time setup (`uv sync --all-extras`)
+run: ## Run the app on port `$(PORT)`
 
-	@printf "$(BOLD)=== 💻 Development ===$(RESET)\n"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "dev-run" "Run dev server"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "dev-test" "Run tests"
-	@printf "\n"
+##@ 💻 Development
 
-	@printf "$(BOLD)=== 🌍 Environment ===$(RESET)\n"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "env-local" "Setup local env"
-	@printf "$(CYAN)%-30s$(RESET) %s\n" "env-prod" "Setup prod env"
-	@printf "\n"
+dev-run: ## Run dev server (`uvicorn --reload`)
+dev-test: ## Run tests (`pytest tests/`)
+
+##@ 🌍 Environment
+
+env-local: ## Create `.env` from `.template.env`
+env-prod: ## Point at the remote prod DB (⚠️ PROD)
 ```
+
+Renders as three `═══ 🚀 Quick Start ═══` sections in **file order** (no
+alphabetical sort), target names in cyan, descriptions in default fg.
+
+**Rules that matter most:**
+
+| # | Rule | Why |
+|---|---|---|
+| 1 | Emoji on `##@` headers, never on target lines | Variation-selector emoji (`⬆️ ♻️ 🖥️`) are 1 cell, `🚀 🐘` are 2 — per-target emoji make the description column jitter |
+| 2 | Section headers and target names get different hues | `$(BOLD)$(BLUE)` vs `$(CYAN)`; same hue flattens the hierarchy into a wall |
+| 3 | Include order = section order | Reordering help means reordering `include` lines, and `help.mk` goes last |
+| 4 | `HELP_VARS := PORT` to expand `$(PORT)` in descriptions | awk reads raw text, so make never expands vars inside `##` comments |
+| 5 | Backtick literals, leave prose plain | Commands/files render green; coloring everything is the same as coloring nothing |
 
 ### Usage Examples in Help
 
-For targets with parameters, show usage on a second line in green:
+The generated renderer emits exactly one row per target, so fold parameters into
+the description rather than adding a second line:
 
 ```makefile
-@printf "$(CYAN)%-40s$(RESET) %s\n" "remove-bg" "Remove background from image"
-@printf "%-40s $(GREEN)make remove-bg IN=logo.png [OUT=logo_nobg.png]$(RESET)\n" ""
+remove-bg: ## Remove image background (`make remove-bg IN=logo.png [OUT=logo_nobg.png]`)
+dev-check: ## Lint + type-check (`ruff check` + `mypy`) — add `FIX=true` to auto-fix
 ```
 
 **Format rules:**
-- Description on first line (cyan target name, white description)
-- Usage on second line in `$(GREEN)` (avoid `$(DIM)` - appears grey/unreadable)
+- One line per target — it shares a row with the target name.
+- No raw ANSI inside `##` comments; `$(YELLOW)` would print literally. The renderer supplies the color.
+- Wrap literals in `` `backticks` `` — commands, files, paths, tool names, target names, env vars. They render **green** and the backticks are stripped. Leave prose plain (`(needs db + redis)`), or the color stops meaning anything.
+- A trailing `(⚠️ …)` renders **yellow** — reserve it for destructive/prod targets.
 - Include full command with realistic example values
 - Show optional params in brackets with sensible defaults
 
