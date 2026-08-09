@@ -150,7 +150,7 @@ list-skills: ## List all skills with descriptions
 ### Configuration         ###
 #############################
 
-CONFIG_ARGS = PROFILE="$(PROFILE)" HOST="$(HOST)" TOOLS="$(TOOLS)" DRY_RUN="$(DRY_RUN)"
+CONFIG_ARGS = PROFILE="$(PROFILE)" HOST="$(HOST)" TOOLS="$(TOOLS)" DRY_RUN="$(DRY_RUN)" AGENT_SKILLS_DIR="$(CURDIR)"
 
 .PHONY: _check-configs
 _check-configs:
