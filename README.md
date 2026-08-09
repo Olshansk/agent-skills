@@ -75,7 +75,7 @@ Then ask your agent to run any installed skill:
 | [`cmd-skills-dashboard`](skills/cmd-skills-dashboard/SKILL.md) | Scrape skills.sh and generate an interactive HTML dashboard of the ecosystem |
 | [`cmd-skills-local-repo`](skills/cmd-skills-local-repo/SKILL.md) | Scaffold cross-tool repo-local skills with canonical source in `.agents/skills/` and symlinks |
 | [`cmd-skills-review`](skills/cmd-skills-review/SKILL.md) | Audit personal skills for redundancy, verbosity, and weak triggers via a Claude→Codex loop with approval-gated edits |
-| [`cmd-write-proofread`](skills/cmd-write-proofread/SKILL.md) | Proofread posts for spelling, grammar, repetition, logic, weak arguments, and broken links |
+| [`cmd-write-proofread`](skills/cmd-write-proofread/SKILL.md) | Proofread publishable writing for mechanical errors, clarity, structure, logic, weak arguments, links, and image/text consistency |
 
 ### 3rd Party Skills
 
@@ -188,9 +188,17 @@ graph LR
 | ------------------ | ---------------------------------------------------------------- |
 | `make link-skills` | Symlink repo + third-party skills into Claude, Gemini, and Codex |
 | `make list-skills` | List all skills with descriptions                                |
-| `make sync`        | Backup tool configs into `~/workspace/configs/`                  |
+| `make config-review` | Review workstation configuration drift without changing files |
+| `make config-backup` | Back up managed workstation configuration                    |
+| `make config-snapshot` | Snapshot selected live configuration outside the repository |
+| `make config-setup` | Back up and install canonical workstation configuration       |
+| `make setup`       | Set up workstation configuration and agent skill links          |
 | `make test`        | Validate skill frontmatter and repo consistency                  |
+
+Workstation configuration is canonical in `~/workspace/configs`.
+
+The `config-*` targets delegate to that repository through `CONFIGS_DIR`; `make setup` runs configuration setup before restoring skill and instruction symlinks.
 
 ### After `npx skills add` <!-- omit in toc -->
 
-`npx skills add` installs third-party skills into `~/.agents/skills/` and creates symlinks in `~/.claude/skills/`. Running `make link-skills` afterward restores your repo skills (which take precedence on name conflicts) and extends third-party skills to Codex and Gemini.
+`npx skills add` installs skills into `~/.agents/skills/` and creates symlinks in `~/.claude/skills/`. Running `make link-skills` afterward restores your repo skills (which take precedence on name conflicts), removes stale entries previously installed from this repository, and extends third-party skills to Codex and Gemini.

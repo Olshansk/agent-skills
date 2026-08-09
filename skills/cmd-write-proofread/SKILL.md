@@ -1,6 +1,6 @@
 ---
 name: cmd-write-proofread
-description: Proofread posts before publishing for spelling, grammar, repetition, logic, weak arguments, broken links, and optionally reformat for skimmability or shape the writing vibe toward a known author's style
+description: Proofread posts before publishing for spelling, grammar, syntax, punctuation, word usage, repetition, logic, weak arguments, clarity, structure, broken links, and image/text consistency. Use this whenever a user asks to proofread, edit, review, or improve a post, essay, article, or other publishable writing, even if they only mention grammar or typos.
 disable-model-invocation: false
 ---
 
@@ -8,15 +8,19 @@ disable-model-invocation: false
 
 You are a proofreader for posts about to be published.
 
-## Instructions
+## Review workflow
 
-1. Read the full post before making any suggestions
-2. Report findings grouped by category below
-3. For each finding, cite the exact text and suggest a fix
-4. If the post is clean, say so — don't invent issues
-5. **Apply all spelling, grammar, repetition, and link fixes in place** — don't just report them, edit the file directly
-6. For weak arguments and logic issues, report them and ask the user before changing
-7. After all edits are applied, offer the optional passes below (in order). Each is opt-in; the user may pick any combination or none:
+1. Read the complete file, including frontmatter, before suggesting or applying changes.
+2. Inspect the working-tree state and preserve unrelated user changes.
+3. Perform a deliberate mechanical pass line by line. Check spelling, homophones, word usage, missing or extra words, articles, prepositions, sentence boundaries, punctuation, spacing, capitalization, agreement, tense, parallel structure, dangling modifiers, idioms, quote punctuation, and repeated wording.
+4. Perform a second mechanical pass after editing. Read the revised text as prose, not just the changed lines, and check that every sentence is grammatical and that no typo or punctuation error remains.
+5. Inspect links, images, captions, dates, and filenames for consistency. Do not claim these are clean without checking whether they exist.
+6. Report findings grouped by category below. For every finding, cite the exact text, identify the location when practical, explain the issue briefly, and suggest a fix.
+7. **Apply spelling, grammar, syntax, punctuation, word-usage, repetition, and link fixes in place** — don't just report them, edit the file directly.
+8. Do not silently make substantive changes to the author's claims, evidence, argument, tone, or structure. Report those as recommendations and ask before changing them.
+9. Always include an "Other improvement opportunities" section. It must either list concrete suggestions for clarity, structure, pacing, specificity, audience fit, or emphasis, or explicitly say that no additional opportunities stood out.
+10. If a category is clean, say so — don't invent issues.
+11. After all edits are applied, offer the optional passes below (in order). Each is opt-in; the user may pick any combination or none:
    a. **Skimmability pass** — *"Would you like me to make this ultra-skimmable?"*
    b. **Emphasis pass** — *"Want me to surface candidates for blockquote pullouts and bolded one-liners?"*
    c. **Hedge pass** — *"Want me to flag low-confidence phrasing ('I think', 'kind of', 'maybe', 'soon') so you can decide what to keep or cut?"*
@@ -27,19 +31,32 @@ You are a proofreader for posts about to be published.
 
 ### Spelling and Typos
 
-- Identify misspellings, typos, and incorrect word usage (e.g., "their" vs "there")
+- Identify misspellings, typos, transposed letters, malformed words, homophones, and incorrect word usage (e.g., "their" vs "there").
+- Pay special attention to words that look plausible but are wrong in context, such as a misspelled noun that changes the meaning of a sentence.
 - **Fix these in place**
 
 ### Grammar
 
-- Identify grammar mistakes including subject-verb agreement, tense consistency, and punctuation
+- Identify grammar and syntax mistakes including subject-verb agreement, tense consistency, sentence fragments, dangling modifiers, parallel structure, missing words, article/preposition usage, punctuation, quotation punctuation, and stray spaces.
+- Check that coordinated phrases use the same grammatical form. For example, "capable, curious, resourceful, and live with..." needs a parallel construction.
+- Check that the grammatical subject performs every verb. For example, a sentence beginning with "I" should not shift into an unowned verb after a comma.
 - **Fix these in place**
 
 ### Repetition
 
 - Watch for repeated terms and phrases (e.g., "It was interesting that X, and it was interesting that Y")
-- Flag overused words or filler phrases
+- Flag overused words, filler phrases, redundant constructions, and repeated meaning (e.g., "end up turning out").
 - **Fix these in place**
+
+### Common missed-error patterns
+
+Use these as a final trap list, not as an exhaustive checklist:
+
+- Plausible-looking misspellings: `complacencity` → `complacency`, `deisre` → `desire`.
+- Stray punctuation and malformed endings: `proud of .` and `a much more difficult one` when the sentence needs `much more difficult`.
+- Tense and subject drift: `I would scoff ... and inadvertently, developed` should be checked for a consistent subject and tense.
+- Broken syntax around quoted phrases: `"I'm so glad it happened" sort of people` should be checked as a complete sentence, not only for punctuation.
+- One-pass false confidence: do not stop after fixing the first typo; reread every sentence after the edits.
 
 ### Logic and Factual Accuracy
 
@@ -53,6 +70,12 @@ You are a proofreader for posts about to be published.
 - Flag vague statements that lack supporting evidence
 - Report these to the user for approval before editing
 
+### Other improvement opportunities
+
+- Look beyond correctness for concrete improvements to clarity, structure, pacing, specificity, transitions, audience fit, emphasis, and reader takeaway.
+- Include the exact text, the opportunity, why it may help, and a proposed direction or rewrite when useful.
+- Keep this separate from mechanical fixes. These are recommendations, not silent edits, unless the user explicitly asks for a broader rewrite.
+
 ### Links
 
 - Make sure there are no empty or placeholder links
@@ -64,6 +87,16 @@ You are a proofreader for posts about to be published.
 
 - If the post includes screenshots, charts, or other generated graphics, verify any visible dates, captions, and labels against the surrounding post text and filename conventions
 - Flag mismatches that would make the post feel internally inconsistent or future-dated
+
+## Final report checklist
+
+Before responding, confirm that the report includes:
+
+- The edits applied in place, grouped by mechanical category.
+- Any remaining logic, factual-accuracy, weak-argument, or improvement recommendations that were not applied.
+- A clear statement about links and images, including when none are present.
+- Validation performed after editing, such as a diff/whitespace check or project build when available.
+- The optional-pass questions in the order listed below.
 
 ## Skimmability Pass (optional, user must opt in)
 

@@ -54,6 +54,7 @@ Sources (in priority order):
   - `makefile` — **Personal** (template-driven Makefile creation)
 - `personal/` — personal configurations and references (ignored by git)
   - `configs/` — tool configuration snapshots (Claude, Gemini, Codex)
+- `~/workspace/configs` — canonical workstation configuration; use `make config-review`, `make config-backup`, `make config-snapshot`, and `make config-setup` for its workflows.
 - `.github/workflows/skills-validate.yml` — CI workflow for skill validation
 - `index.html` — root GitHub Pages dashboard
 - `Makefile` — local orchestration (link-skills, sync)
