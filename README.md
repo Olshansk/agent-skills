@@ -189,6 +189,7 @@ graph LR
 | `make link-skills` | Symlink repo + third-party skills into Claude, Gemini, and Codex |
 | `make list-skills` | List all skills with descriptions                                |
 | `make config-review` | Review workstation configuration drift without changing files |
+| `make config-secrets-check` | Scan tracked workstation configuration for literal secrets |
 | `make config-backup` | Back up managed workstation configuration                    |
 | `make config-snapshot` | Snapshot selected live configuration outside the repository |
 | `make config-setup` | Back up and install canonical workstation configuration       |

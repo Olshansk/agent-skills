@@ -112,6 +112,7 @@ help-unclassified: ## List documented targets with no `##@` section above them
 					substr(desc, RSTART + 1, RLENGTH - 2) "$(RESET)" \
 					substr(desc, RSTART + RLENGTH) \
 			} \
+			gsub(/\(⚠️[^)]*\)/, "$(YELLOW)&$(RESET)", desc); \
 			w = pad - length(name); if (w < 1) w = 1; \
 			found = 1; printf "  $(CYAN)%s$(RESET)%*s%s\n", name, w, "", desc \
 		} \

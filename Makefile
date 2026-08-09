@@ -3,8 +3,14 @@
 ########################
 
 BOLD := \033[1m
+BLUE := \033[34m
 CYAN := \033[36m
+DIM := \033[2m
+GREEN := \033[32m
+RED := \033[31m
 RESET := \033[0m
+
+.DEFAULT_GOAL := help
 
 REPO_SKILLS := $(CURDIR)/skills
 REPO_AGENTS := $(CURDIR)/agents
@@ -18,28 +24,11 @@ HOST ?= $(shell scutil --get LocalHostName 2>/dev/null || hostname -s)
 TOOLS ?= all
 DRY_RUN ?= 0
 
-.PHONY: help
-.DEFAULT_GOAL := help
-help: ## Prints all the targets in the Makefile
-	@echo ""
-	@echo "$(BOLD)$(CYAN)Agent Skills Repository$(RESET)"
-	@echo ""
-	@echo "$(BOLD)=== Skills ===$(RESET)"
-	@grep -h -E '^(link|list|publish|sync-external).*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
-	@echo ""
-	@echo "$(BOLD)=== Configuration ===$(RESET)"
-	@grep -h -E '^(setup|config-.*|sync):.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
-	@echo ""
-	@echo "$(BOLD)=== Testing ===$(RESET)"
-	@grep -h -E '^stress.*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
-	@echo ""
-	@echo "$(BOLD)=== Info ===$(RESET)"
-	@grep -h -E '^(help|status|test).*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "$(CYAN)%-40s$(RESET) %s\n", $$1, $$2}'
-	@echo ""
-
 ########################
 ### Skills           ###
 ########################
+
+##@ 🧠 Skills
 
 ALL_TARGETS := $(HOME)/.claude/skills $(SHARE_TARGETS)
 
@@ -150,6 +139,8 @@ list-skills: ## List all skills with descriptions
 ### Configuration         ###
 #############################
 
+##@ ⚙️ Configuration
+
 CONFIG_ARGS = PROFILE="$(PROFILE)" HOST="$(HOST)" TOOLS="$(TOOLS)" DRY_RUN="$(DRY_RUN)" AGENT_SKILLS_DIR="$(CURDIR)"
 
 .PHONY: _check-configs
@@ -163,6 +154,10 @@ _check-configs:
 .PHONY: config-review
 config-review: _check-configs ## Review workstation configuration drift without changing files
 	@$(MAKE) -C "$(CONFIGS_DIR)" review $(CONFIG_ARGS)
+
+.PHONY: config-secrets-check
+config-secrets-check: _check-configs ## Scan tracked workstation configuration for literal secrets
+	@$(MAKE) -C "$(CONFIGS_DIR)" secrets-check $(CONFIG_ARGS)
 
 .PHONY: config-backup
 config-backup: _check-configs ## Back up managed workstation configuration
@@ -195,6 +190,8 @@ publish: ## Install all skills globally via npx (for skills.sh telemetry), then 
 ### Testing          ###
 ########################
 
+##@ 🧪 Testing
+
 STRESS_SKILL ?= cmd-pr-conflict-resolver
 STRESS_COUNT ?= 50
 
@@ -213,6 +210,8 @@ stress-install: ## Reinstall a single skill N times (testing only)
 ########################
 ### Info             ###
 ########################
+
+##@ 📋 Repository Info
 
 .PHONY: status
 status: ## Show repository status
@@ -250,3 +249,10 @@ test: ## Validate skill frontmatter and repo consistency
 	else \
 		echo "All checks passed"; \
 	fi
+
+HELP_TITLE ?= Agent Skills — Make Targets
+HELP_ICON ?= 🧠
+HELP_TAGLINE ?= Skills, configuration, testing, and repository information.
+HELP_WIDTH ?= 46
+HELP_PAD ?= 24
+include skills/cmd-makefile/modules/help.mk
