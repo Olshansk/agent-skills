@@ -7,7 +7,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'skills/skills-dashboard/**'
+      - 'skills/cmd-skills-dashboard/**'
       - '.github/workflows/skills-dashboard.yml'
 
 permissions:
@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Generate dashboard
-        run: python skills/skills-dashboard/scripts/scrape_and_build.py --no-cache --output index.html
+        run: python skills/cmd-skills-dashboard/scripts/scrape_and_build.py --no-cache --output index.html
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
