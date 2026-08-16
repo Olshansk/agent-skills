@@ -96,6 +96,7 @@ skills/<skill-name>/
 - `name` must match the skill directory name and be kebab-case
 - `description` should say what it does and when to use it
 - Keep `SKILL.md` concise; move extended content to `references/`
+- When `agents/openai.yaml` is present, `interface.display_name` must exactly match the skill directory name so Codex autocomplete shows the invocation name
 
 **Naming conventions:**
 - Personal global skills: always prefix with `cmd-`

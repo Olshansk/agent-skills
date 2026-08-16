@@ -1,4 +1,4 @@
 interface:
-  display_name: "Makefile Foundation Review"
+  display_name: "cmd-makefile-improve"
   short_description: "Review and improve Makefile foundations"
   default_prompt: "Use $cmd-makefile-improve to review this repository’s Makefile foundation and propose approval-gated improvements."
