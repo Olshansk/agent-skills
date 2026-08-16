@@ -55,6 +55,7 @@ Then ask your agent to run any installed skill:
 | [`cmd-golden-tests`](skills/cmd-golden-tests/SKILL.md) | Set up or extend golden/snapshot tests: fixture design, Makefile targets, snapshot storage, diff workflow, and update protocol |
 | [`cmd-latest-msg`](skills/cmd-latest-msg/SKILL.md) | Store or retrieve the latest agent message to `/tmp/agents/{agent}/` |
 | [`cmd-makefile`](skills/cmd-makefile/SKILL.md) | Create or improve Makefiles with templates (python-uv, fastapi, nodejs, go, flutter), generated `##@` section help, and generated `TODO.md` |
+| [`cmd-makefile-improve`](skills/cmd-makefile-improve/SKILL.md) | Review Makefile foundations and propose approval-gated improvements to helpers, templates, tests, and docs |
 | [`cmd-mermaid-render`](skills/cmd-mermaid-render/SKILL.md) | Render and display Mermaid diagrams inline in iTerm2 or Ghostty |
 | [`cmd-olshanskify`](skills/cmd-olshanskify/SKILL.md) | Apply Olshansky's personal style to docs, code, blog posts, or presentations via templates |
 | [`cmd-plan-store`](skills/cmd-plan-store/SKILL.md) | Capture conversation plans, decisions, and action items into structured markdown in `plans/` |

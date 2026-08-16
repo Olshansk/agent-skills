@@ -140,6 +140,7 @@ When modifying shell config, edit files in `~/workspace/configs/zshrc.d/` (not `
   - Repo-specific skills use the repo name prefix, or ask if ambiguous.
 - See `../README.md#available-skills` for the canonical skill catalog.
 - Reference skill: `cmd-makefile/` contains Makefile conventions, templates, and patterns.
+- Review skill: `cmd-makefile-improve/` audits that foundation and proposes approval-gated iterations.
 
 ## Communication Format Preferences
 
